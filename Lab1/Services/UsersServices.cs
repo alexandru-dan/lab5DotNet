@@ -43,11 +43,9 @@ namespace Lab1.Services
                 .SingleOrDefault(x => x.Username == username &&
                                  x.Password == ComputeSha256Hash(password));
 
-            // return null if user not found
             if (user == null)
                 return null;
 
-            // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -69,7 +67,6 @@ namespace Lab1.Services
                 Token = tokenHandler.WriteToken(token),
                 UserRole = user.UserRole.ToString()
             };
-            // remove password before returning
             return result;
         }
 
@@ -82,14 +79,10 @@ namespace Lab1.Services
 
         public static string ComputeSha256Hash(string rawData)
         {
-            // Create a SHA256   
-            // TODO: also use salt
             using (SHA256 sha256Hash = SHA256.Create())
-            {
-                // ComputeHash - returns byte array  
+            { 
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-
-                // Convert byte array to a string   
+                
                 StringBuilder builder = new StringBuilder();
                 for (int i = 0; i < bytes.Length; i++)
                 {
@@ -133,17 +126,15 @@ namespace Lab1.Services
             {
                 return null;
             }
-            // Un Admin poate sterge orice
             if (connectedUser.UserRole == UserRole.Admin)
             {
                 return HelpMethodForDelete(existing);
             }
-            // daca userul pe care vreau sa il sterg este UserManager, si eu am rol de UserManager cu vechime mai mare de 6 luni pot sa il sterg
+            //if(existing.UserRole == UserRole.UserManager))
             if (existing.UserRole == UserRole.UserManager && ((DateTime.Now - connectedUser.DateRegistered).Days > 180))
             {
                 return HelpMethodForDelete(existing);
             }
-            // daca userul pe care vreau sa il sterg este diferit de UserManager si diferit de Admin
             if (existing.UserRole != UserRole.Admin && existing.UserRole != UserRole.UserManager)
             {
                 return HelpMethodForDelete(existing);
@@ -162,18 +153,15 @@ namespace Lab1.Services
                 context.SaveChanges();
                 return user;
             }
-
-            // Admin poate face update la orice user
             if (connectedUser.UserRole == UserRole.Admin)
             {
                 return HelpMethodForUpsert(existing, modifiedUser, connectedUser);
             }
-            // daca userul caruia vreau sa ii fac update este UserManager, si eu am rol de UserManager cu vechime mai mare de 6 luni atunci o pot face
+            //if(existing.UserRole == UserRole.UserManager))
             if (existing.UserRole == UserRole.UserManager && ((DateTime.Now - connectedUser.DateRegistered).Days > 180))
             {
                 return HelpMethodForUpsert(existing, modifiedUser, connectedUser);
             }
-            // daca userul caruia vreau sa ii fac update este diferit de UserManager si diferit de Admin atunci pot sa ii fac update
             if (existing.UserRole != UserRole.Admin && existing.UserRole != UserRole.UserManager)
             {
                 return HelpMethodForUpsert(existing, modifiedUser, connectedUser);
@@ -182,14 +170,12 @@ namespace Lab1.Services
             return null;
         }
 
-        // help method for deleting and saving a user from database
         private User HelpMethodForDelete(User existing)
         {
             context.Users.Remove(existing);
             context.SaveChanges();
             return existing;
         }
-        // help method for Updating a user in db
         private User HelpMethodForUpsert(User existing, RegisterPostModel modifiedUser, User connectedUser)
         {
             User updated = RegisterPostModel.ToUpdateUser(existing, modifiedUser, connectedUser);
