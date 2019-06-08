@@ -23,27 +23,7 @@ namespace Lab1.ViewModels
         public static User ToUser(RegisterPostModel registerPostModel)
         {
             UserRole userRole = new UserRole();
-
-            if (registerPostModel.UserRole == "UserManager")
-            {
-                userRole = Models.UserRole.UserManager;
-            }
-            else if (registerPostModel.UserRole == "Regular")
-            {
-                userRole = Models.UserRole.Regular;
-            }
-            else if (registerPostModel.UserRole == "Admin")
-            {
-                userRole = Models.UserRole.Admin;
-            }
-            else if (registerPostModel.UserRole == null)
-            {
-                userRole = Models.UserRole.Regular;
-            }
-            else
-            {
-                return null;
-            }
+            userRole = Models.UserRole.Regular;
 
             return new User()
             {
@@ -52,7 +32,6 @@ namespace Lab1.ViewModels
                 Email = registerPostModel.Email,
                 Username = registerPostModel.Username,
                 Password = UsersService.ComputeSha256Hash(registerPostModel.Password),
-                UserRole = userRole,
                 DateRegistered = DateTime.Now
             };
         }
@@ -60,23 +39,8 @@ namespace Lab1.ViewModels
         public static User ToUpdateUser(User existingUser, RegisterPostModel registerPostModel, User connectedUser)
         {
             UserRole userRole = new UserRole();
+            userRole = Models.UserRole.Regular;
 
-            if (registerPostModel.UserRole == "UserManager")
-            {
-                userRole = Models.UserRole.UserManager;
-            }
-            else if (registerPostModel.UserRole == "Regular")
-            {
-                userRole = Models.UserRole.Regular;
-            }
-            else if (registerPostModel.UserRole == "Admin")
-            {
-                userRole = Models.UserRole.Admin;
-            }
-            else
-            {
-                return null;
-            }
 
             existingUser.FirstName = registerPostModel.FirstName;
             existingUser.LastName = registerPostModel.LastName;
