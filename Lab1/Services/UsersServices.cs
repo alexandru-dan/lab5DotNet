@@ -24,6 +24,7 @@ namespace Lab1.Services
         UserGetModel Register(RegisterPostModel registerInfo);
         User UpsertUser(int id, RegisterPostModel userRegister, User connectedUser);
         User DeleteUser(int id, User connectedUser);
+        RegisterPostModel GetUserById(int id);
     }
 
     public class UsersService : IUsersService
@@ -118,6 +119,20 @@ namespace Lab1.Services
 
             return Authenticate(registerInfo.Username, registerInfo.Password);
         }
+
+        public RegisterPostModel GetUserById(int id)
+        {
+            User user = context.Users.FirstOrDefault(c => c.Id == id);
+
+            return new RegisterPostModel()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Username = user.Username,
+                UserRole = user.UserRole.ToString()
+            };
+        } 
 
         public User DeleteUser(int id, User connectedUser)
         {

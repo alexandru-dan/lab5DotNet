@@ -36,6 +36,10 @@ namespace Lab1.ViewModels
             {
                 userRole = Models.UserRole.Admin;
             }
+            else if (registerPostModel.UserRole == null)
+            {
+                userRole = Models.UserRole.Regular;
+            }
             else
             {
                 return null;
