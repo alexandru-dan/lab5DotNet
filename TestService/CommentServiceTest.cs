@@ -42,19 +42,19 @@ namespace Tests
                     DateAdded = new DateTime(08/06/2019),
                     Rating = 9,
                     WasWatched = "NO",
-                    Comments = new List<Comment>()
+                    Comments = new List<CommentGetModel>()
                     {
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 1",
                             Important = false
                         },
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 2",
                             Important = true
                         },
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 3",
                             Important = false
@@ -101,17 +101,17 @@ namespace Tests
                     WasWatched = "YES",
                     Comments = new List<CommentGetModel>()
                     {
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 1 filtered",
                             Important = false
                         },
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 2 filtered",
                             Important = true
                         },
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 3",
                             Important = false
@@ -156,19 +156,19 @@ namespace Tests
                     DateAdded = new DateTime(03 / 06 / 2019),
                     Rating = 3,
                     WasWatched = "YES",
-                    Comments = new List<Comment>()
+                    Comments = new List<CommentGetModel>()
                     {
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 1",
                             Important = false
                         },
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 2",
                             Important = true
                         },
-                        new Comment()
+                        new CommentGetModel()
                         {
                             Text = "A test comment 3",
                             Important = false

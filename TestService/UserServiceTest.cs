@@ -21,7 +21,7 @@ namespace Test
         {
             config = Options.Create(new AppSettings
             {
-                Secret = "LALALALA"
+                Secret = "Secret string for secret thing"
             });
         }
 
@@ -29,7 +29,7 @@ namespace Test
         public void ValidRegisterShouldCreateANewUser()
         {
             var options = new DbContextOptionsBuilder<DataDbContext>()
-              .UseInMemoryDatabase(databaseName: nameof(ValidRegisterShouldCreateANewUser))// "ValidRegisterShouldCreateANewUser")
+              .UseInMemoryDatabase(databaseName: nameof(ValidRegisterShouldCreateANewUser))
               .Options;
 
             using (var context = new DataDbContext(options))
@@ -39,9 +39,11 @@ namespace Test
                 {
                     FirstName = "Alexandru",
                     LastName = "Dan",
-                    Username = "NeK",
+                    Username = "anacumere",
                     Email = "nekwow7@gmail.com",
-                    Password = "unudoitrei"
+                    Password = "unudoitrei",
+                    UserRole = "Regular"
+
                 };
                 var result = usersService.Register(added);
 

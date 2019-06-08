@@ -11,7 +11,7 @@ namespace Lab1.Migrations
 {
     [DbContext(typeof(DataDbContext))]
     [Migration("20190608001548_comment")]
-    partial class comment
+    partial class Comment
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
