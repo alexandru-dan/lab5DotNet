@@ -99,7 +99,7 @@ namespace Tests
                     DateAdded = new DateTime(03 / 06 / 2019),
                     Rating = 3,
                     WasWatched = "YES",
-                    Comments = new List<Comment>()
+                    Comments = new List<CommentGetModel>()
                     {
                         new Comment()
                         {

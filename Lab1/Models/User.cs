@@ -22,5 +22,6 @@ namespace Lab1.Models
         public string Password { get; set; }
         [EnumDataType(typeof(UserRole))]
         public UserRole UserRole { get; set; }
+        public DateTime DateRegistered { get; set; }
     }
 }

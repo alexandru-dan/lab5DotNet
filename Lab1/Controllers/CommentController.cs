@@ -27,7 +27,8 @@ namespace Lab1.Controllers
         /// <returns>A list of comments</returns>
         // GET: api/Movie
         [HttpGet]
-        public IEnumerable<CommentGetModel> GetAllComments([FromQuery] string filter)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IEnumerable<CommentGetModel> GetAllComments(string filter)
         {
             return service.GetAllComments(filter);
         }

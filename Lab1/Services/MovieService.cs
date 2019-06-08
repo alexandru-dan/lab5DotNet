@@ -11,9 +11,9 @@ namespace Lab1.Services
     public interface IMovieService
     {
         PaginatedList<MovieGetModel> GetAllMovies(int page, DateTime? from, DateTime? to);
-        Movie GetById(int id);
+        MoviePostModel GetById(int id);
         Movie Create(MoviePostModel movie);
-        Movie Upsert(int id, Movie movie);
+        Movie Upsert(int id, MoviePostModel movie);
         Movie Delete(int id);
     }
 
@@ -21,19 +21,39 @@ namespace Lab1.Services
     {
         private DataDbContext Context;
 
+        /// <summary>
+        /// Constructor for Service
+        /// </summary>
+        /// <param name="Context">Repository</param>
         public MovieService(DataDbContext Context)
         {
             this.Context = Context;
         }
 
+        /// <summary>
+        /// Create a new Movie, using MoviePostModel
+        /// </summary>
+        /// <param name="movie">New Movie object</param>
+        /// <returns></returns>
         public Movie Create(MoviePostModel movie)
         {
             Movie convertedMovie = MoviePostModel.ToMovie(movie);
+
+            if (convertedMovie == null)
+            {
+                return null;
+            }
+
             Context.Movies.Add(convertedMovie);
             Context.SaveChanges();
             return convertedMovie;
         }
 
+        /// <summary>
+        /// Delete an movie using id
+        /// </summary>
+        /// <param name="id">Id of the movie we want to delete</param>
+        /// <returns></returns>
         public Movie Delete(int id)
         {
             Movie foundMovie = Context.Movies.Include(comment => comment.Comments).FirstOrDefault(movie => movie.Id == id);
@@ -41,12 +61,24 @@ namespace Lab1.Services
             {
                 return null;
             }
-            Context.Remove(foundMovie);
+            foreach (var item in foundMovie.Comments)
+            {
+                Context.Comments.Remove(item);
+            }
+
+            Context.Movies.Remove(foundMovie);
             Context.SaveChanges();
 
             return foundMovie;
         }
 
+        /// <summary>
+        /// Return all movies from db
+        /// </summary>
+        /// <param name="page">The page we want to see</param>
+        /// <param name="from">Optional, filter by min date</param>
+        /// <param name="to">Optional, filter by max date</param>
+        /// <returns>List of movies with/without filters</returns>
         public PaginatedList<MovieGetModel> GetAllMovies(int page, DateTime? from, DateTime? to)
         {
             IQueryable<Movie> result = Context.Movies.Include(movie => movie.Comments).OrderByDescending(movie => movie.ReleseYear);
@@ -72,26 +104,38 @@ namespace Lab1.Services
             return paginatedResult;
         }
 
-        public Movie GetById(int id)
+
+
+        public MoviePostModel GetById(int id)
         {
-            return Context.Movies.Include(movie => movie.Comments).FirstOrDefault(movie => movie.Id == id);
+            var res = Context.Movies
+                .Include(e => e.Comments)
+                .FirstOrDefault(f => f.Id == id);
+
+            return MoviePostModel.FromMovie(res);
         }
 
-        public Movie Upsert(int id, Movie movie)
+        /// <summary>
+        /// Update or Add
+        /// </summary>
+        /// <param name="id">Id for update</param>
+        /// <param name="movies">New Movie object we want to add</param>
+        /// <returns></returns>
+        public Movie Upsert(int id, MoviePostModel movies)
         {
             var existing = Context.Movies.AsNoTracking().FirstOrDefault(c => c.Id == id);
 
             if (existing == null)
             {
-                Context.Movies.Add(movie);
+                var movie = Context.Movies.Add(MoviePostModel.ToMovie(movies));
                 Context.SaveChanges();
-                return movie;
+                return movie.Entity;
             }
-            movie.Id = id;
-            Context.Movies.Update(movie);
+            var res = MoviePostModel.ToUpdateMovie(movies, existing);
+
             Context.SaveChanges();
 
-            return movie;
+            return res;
         }
     }
 }

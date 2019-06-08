@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lab1.Models;
 using Lab1.Services;
 using Lab1.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lab1.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "UserManager, Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -21,6 +22,12 @@ namespace Lab1.Controllers
         {
             this.userService = userService;
         }
+
+        private User GetConnectedUser()
+        {
+            return userService.GetCurrentUser(HttpContext);
+        }
+
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
@@ -53,6 +60,42 @@ namespace Lab1.Controllers
         {
             var users = userService.GetAll();
             return Ok(users);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+
+            var result = userService.DeleteUser(id, GetConnectedUser());
+            if (result == null)
+            {
+                return NotFound();
+            }
+            result.Password = null;
+
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public IActionResult Put(int id, [FromBody] RegisterPostModel registerPostModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(registerPostModel);
+            }
+
+            var result = userService.UpsertUser(id, registerPostModel, GetConnectedUser());
+            if (result == null)
+            {
+                return Forbid();
+            }
+            result.Password = null;
+            return Ok(result);
         }
     }
 }

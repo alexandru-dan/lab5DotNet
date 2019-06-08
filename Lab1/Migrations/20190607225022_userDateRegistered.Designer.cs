@@ -4,14 +4,16 @@ using Lab1.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Lab1.Migrations
 {
     [DbContext(typeof(DataDbContext))]
-    partial class MovieDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190607225022_userDateRegistered")]
+    partial class userDateRegistered
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,7 +101,7 @@ namespace Lab1.Migrations
 
             modelBuilder.Entity("Lab1.Models.Comment", b =>
                 {
-                    b.HasOne("Lab1.Models.Movie", "Movie")
+                    b.HasOne("Lab1.Models.Movie")
                         .WithMany("Comments")
                         .HasForeignKey("MovieId");
                 });

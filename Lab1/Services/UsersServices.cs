@@ -1,6 +1,8 @@
 ﻿using Lab1.Models;
+using Lab1.Services;
 using Lab1.ViewModels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -10,16 +12,18 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Lab1.Services
 {
     public interface IUsersService
     {
         UserGetModel Authenticate(string username, string password);
-        UserGetModel Register(RegisterPostModel registerInfo);
         User GetCurrentUser(HttpContext httpContext);
+
         IEnumerable<UserGetModel> GetAll();
+        UserGetModel Register(RegisterPostModel registerInfo);
+        User UpsertUser(int id, RegisterPostModel userRegister, User connectedUser);
+        User DeleteUser(int id, User connectedUser);
     }
 
     public class UsersService : IUsersService
@@ -62,13 +66,21 @@ namespace Lab1.Services
                 Id = user.Id,
                 Email = user.Email,
                 Username = user.Username,
-                Token = tokenHandler.WriteToken(token)
+                Token = tokenHandler.WriteToken(token),
+                UserRole = user.UserRole.ToString()
             };
             // remove password before returning
             return result;
         }
 
-        private string ComputeSha256Hash(string rawData)
+        public User GetCurrentUser(HttpContext httpContext)
+        {
+            string username = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value;
+
+            return context.Users.FirstOrDefault(u => u.Username == username);
+        }
+
+        public static string ComputeSha256Hash(string rawData)
         {
             // Create a SHA256   
             // TODO: also use salt
@@ -87,6 +99,19 @@ namespace Lab1.Services
             }
         }
 
+
+        public IEnumerable<UserGetModel> GetAll()
+        {
+            return context.Users.Select(user => new UserGetModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                UserRole = user.UserRole.ToString(),
+                DateRegistered = user.DateRegistered
+            });
+        }
+
         public UserGetModel Register(RegisterPostModel registerInfo)
         {
             User existing = context.Users.FirstOrDefault(u => u.Username == registerInfo.Username);
@@ -95,38 +120,82 @@ namespace Lab1.Services
                 return null;
             }
 
-            context.Users.Add(new User
-            {
-                Email = registerInfo.Email,
-                LastName = registerInfo.LastName,
-                FirstName = registerInfo.FirstName,
-                Password = ComputeSha256Hash(registerInfo.Password),
-                Username = registerInfo.Username,
-                UserRole = UserRole.Regular
-            });
+            context.Users.Add(RegisterPostModel.ToUser(registerInfo));
             context.SaveChanges();
+
             return Authenticate(registerInfo.Username, registerInfo.Password);
         }
 
-        public User GetCurrentUser(HttpContext httpContext)
+        public User DeleteUser(int id, User connectedUser)
         {
-            string username = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value;
-            //string accountType = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.AuthenticationMethod).Value;
-            //return _context.Users.FirstOrDefault(u => u.Username == username && u.AccountType.ToString() == accountType);
-            return context.Users.FirstOrDefault(u => u.Username == username);
+            User existing = context.Users.FirstOrDefault(u => u.Id == id);
+            if (existing == null)
+            {
+                return null;
+            }
+            // Un Admin poate sterge orice
+            if (connectedUser.UserRole == UserRole.Admin)
+            {
+                return HelpMethodForDelete(existing);
+            }
+            // daca userul pe care vreau sa il sterg este UserManager, si eu am rol de UserManager cu vechime mai mare de 6 luni pot sa il sterg
+            if (existing.UserRole == UserRole.UserManager && ((DateTime.Now - connectedUser.DateRegistered).Days > 180))
+            {
+                return HelpMethodForDelete(existing);
+            }
+            // daca userul pe care vreau sa il sterg este diferit de UserManager si diferit de Admin
+            if (existing.UserRole != UserRole.Admin && existing.UserRole != UserRole.UserManager)
+            {
+                return HelpMethodForDelete(existing);
+            }
+
+            return null;
         }
 
-        public IEnumerable<UserGetModel> GetAll()
-
+        public User UpsertUser(int id, RegisterPostModel modifiedUser, User connectedUser)
         {
-            // return users without passwords
-            return context.Users.Select(user => new UserGetModel
+            var existing = context.Users.AsNoTracking().FirstOrDefault(c => c.Id == id);
+            if (existing == null)
             {
-                Id = user.Id,
-                Email = user.Email,
-                Username = user.Username,
-                Token = null
-            });
+                User user = RegisterPostModel.ToUser(modifiedUser);
+                context.Users.Add(user);
+                context.SaveChanges();
+                return user;
+            }
+
+            // Admin poate face update la orice user
+            if (connectedUser.UserRole == UserRole.Admin)
+            {
+                return HelpMethodForUpsert(existing, modifiedUser, connectedUser);
+            }
+            // daca userul caruia vreau sa ii fac update este UserManager, si eu am rol de UserManager cu vechime mai mare de 6 luni atunci o pot face
+            if (existing.UserRole == UserRole.UserManager && ((DateTime.Now - connectedUser.DateRegistered).Days > 180))
+            {
+                return HelpMethodForUpsert(existing, modifiedUser, connectedUser);
+            }
+            // daca userul caruia vreau sa ii fac update este diferit de UserManager si diferit de Admin atunci pot sa ii fac update
+            if (existing.UserRole != UserRole.Admin && existing.UserRole != UserRole.UserManager)
+            {
+                return HelpMethodForUpsert(existing, modifiedUser, connectedUser);
+            }
+
+            return null;
+        }
+
+        // help method for deleting and saving a user from database
+        private User HelpMethodForDelete(User existing)
+        {
+            context.Users.Remove(existing);
+            context.SaveChanges();
+            return existing;
+        }
+        // help method for Updating a user in db
+        private User HelpMethodForUpsert(User existing, RegisterPostModel modifiedUser, User connectedUser)
+        {
+            User updated = RegisterPostModel.ToUpdateUser(existing, modifiedUser, connectedUser);
+            context.Users.Update(updated);
+            context.SaveChanges();
+            return updated;
         }
     }
 }

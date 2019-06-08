@@ -20,46 +20,134 @@ namespace Lab1.ViewModels
         [Range(1, 10)]
         public double Rating { get; set; }
         public string WasWatched { get; set; }
-        public List<Comment> Comments { get; set; }
+        public List<CommentGetModel> Comments { get; set; }
 
-
-        public static Movie ToMovie(MoviePostModel movie)
+        public static MoviePostModel FromMovie(Movie movie)
         {
-            Genre movieGenre = Genre.Action;
+            string genre = "";
 
-            if (movie.MovieGenre == "Comedy")
+            if (movie.MovieGenre == Models.Genre.Comedy)
             {
-                movieGenre = Genre.Comedy;
+                genre = "Comedy";
             }
-            else if (movie.MovieGenre == "Horror")
+            else if (movie.MovieGenre == Models.Genre.Horror)
             {
-                movieGenre = Genre.Horror;
+                genre = "Horror";
             }
-            else if (movie.MovieGenre == "Thriller")
+            else if (movie.MovieGenre == Models.Genre.Thriller)
             {
-                movieGenre = Genre.Thriller;
-            }
-
-            Watched watched = Watched.NO;
-
-            if (movie.WasWatched == "YES")
-            {
-                watched = Watched.YES;
+                genre = "Thriller";
             }
 
-            return new Movie
+            string watched = "";
+
+            if (movie.WasWatched == Models.Watched.YES)
+            {
+                watched = "YES";
+            }
+            else
+            {
+                watched = "NO";
+            }
+
+            return new MoviePostModel
             {
                 Title = movie.Title,
                 Description = movie.Description,
-                MovieGenre = movieGenre,
+                MovieGenre = genre,
                 DurationInMinutes = movie.DurationInMinutes,
                 ReleseYear = movie.ReleseYear,
                 Director = movie.Director,
                 DateAdded = movie.DateAdded,
                 Rating = movie.Rating,
                 WasWatched = watched,
-                Comments = movie.Comments
+                Comments = CommentGetModel.FromComments(movie.Comments)
             };
+        }
+
+        public static Movie ToMovie(MoviePostModel movie)
+        {
+            Models.Genre genre = new Models.Genre();
+
+            if (movie.MovieGenre == "Comedy")
+            {
+                genre = Genre.Comedy;
+            }
+            else if (movie.MovieGenre == "Horror")
+            {
+                genre = Genre.Horror;
+            }
+            else if (movie.MovieGenre == "Thriller")
+            {
+                genre = Genre.Thriller;
+            }
+
+            Models.Watched watched = new Models.Watched();
+
+            if (movie.WasWatched == "YES")
+            {
+                watched = Watched.YES;
+            }
+            else
+            {
+                watched = Watched.NO;
+            }
+
+            return new Movie
+            {
+                Title = movie.Title,
+                Description = movie.Description,
+                MovieGenre = genre,
+                DurationInMinutes = movie.DurationInMinutes,
+                ReleseYear = movie.ReleseYear,
+                Director = movie.Director,
+                DateAdded = movie.DateAdded,
+                Rating = movie.Rating,
+                WasWatched = watched,
+                Comments = CommentGetModel.ToComments(movie.Comments)
+            };
+        }
+
+        public static Movie ToUpdateMovie(MoviePostModel moviePostModel, Movie movie)
+        {
+            Models.Genre genre = new Models.Genre();
+
+            if (moviePostModel.MovieGenre == "Comedy")
+            {
+                genre = Genre.Comedy;
+            }
+            else if (moviePostModel.MovieGenre == "Horror")
+            {
+                genre = Genre.Horror;
+            }
+            else if (moviePostModel.MovieGenre == "Thriller")
+            {
+                genre = Genre.Thriller;
+            }
+
+            Models.Watched watched = new Models.Watched();
+
+            if (moviePostModel.WasWatched == "YES")
+            {
+                watched = Watched.YES;
+            }
+            else
+            {
+                watched = Watched.NO;
+            }
+
+            movie.Title = moviePostModel.Title;
+            movie.Description = moviePostModel.Description;
+            movie.MovieGenre = genre;
+            movie.DurationInMinutes = moviePostModel.DurationInMinutes;
+            movie.ReleseYear = moviePostModel.ReleseYear;
+            movie.Director = moviePostModel.Director;
+            movie.DateAdded = moviePostModel.DateAdded;
+            movie.Rating = moviePostModel.Rating;
+            movie.WasWatched = watched;
+            movie.Comments = CommentGetModel.ToComments(moviePostModel.Comments);
+
+            return movie;
         }
     }
 }

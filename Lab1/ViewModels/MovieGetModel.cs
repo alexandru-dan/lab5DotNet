@@ -15,7 +15,7 @@ namespace Lab1.ViewModels
         public DateTime DateAdded { get; set; }
         public string Director { get; set; }
         public double Rating { get; set; }
-        public List<Comment> Comments { get; set; }
+        public int NumberOfComments { get; set; }
 
         public static MovieGetModel FromMovie(Movie movie)
         {
@@ -27,7 +27,7 @@ namespace Lab1.ViewModels
                 DateAdded = movie.DateAdded,
                 Director = movie.Director,
                 Rating = movie.Rating,
-                Comments = movie.Comments
+                NumberOfComments = movie.Comments.Count
                 
             };
         }

@@ -11,5 +11,7 @@ namespace Lab1.ViewModels
         public string Username { get; set; }
         public string Email { get; set; }
         public string Token { get; set; }
+        public string UserRole { get; set; }
+        public DateTime DateRegistered { get; set; }
     }
 }

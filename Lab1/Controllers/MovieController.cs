@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lab1.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Regular, Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class MovieController : ControllerBase
@@ -50,7 +50,7 @@ namespace Lab1.Controllers
         /// <param name="id"> The id of the movie </param>
         /// <returns>A movie if exists, or Not found if not exists</returns>
         // GET: api/Movie/5
-        [HttpGet("{id}", Name = "Get")]
+        [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Get(int id)
@@ -122,7 +122,7 @@ namespace Lab1.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Put(int id, [FromBody] Movie movie)
+        public IActionResult Put(int id, [FromBody] MoviePostModel movie)
         {
             if (!ModelState.IsValid)
             {

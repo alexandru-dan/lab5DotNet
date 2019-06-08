@@ -23,20 +23,34 @@ namespace Lab1.Services
 
         public List<CommentGetModel> GetAllComments(string text)
         {
-            IQueryable<CommentGetModel> result = Context.Comments.Select(comment => new CommentGetModel() { 
+            //IQueryable<CommentGetModel> result = Context.Comments.Select(comment => new CommentGetModel() { 
 
-                Id = comment.Id,
-                Text = comment.Text,
-                Important = comment.Important,
-                MovieId = (from movies in Context.Movies
-                           where movies.Comments.Contains(comment)
-                           select movies.Id).FirstOrDefault()
-            });
+            //    Id = comment.Id,
+            //    Text = comment.Text,
+            //    Important = comment.Important,
+            //    MovieId = (from movies in Context.Movies
+            //               where movies.Comments.Contains(comment)
+            //               select movies.Id).FirstOrDefault()
+            //});
 
-            if (text != null)
-            {
-                result = result.Where(comment => comment.Text.Contains(text));
-            }
+            //if (text != null)
+            //{
+            //    result = result.Where(comment => comment.Text.Contains(text));
+            //}
+
+            IQueryable<CommentGetModel> result = Context
+                .Comments
+                .Where(c => string.IsNullOrEmpty(text) || c.Text.Contains(text))
+                .OrderBy(c => c.Id)
+                .Select(c => new CommentGetModel()
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    Important = c.Important,
+                    MovieId = (from e in Context.Movies
+                               where e.Comments.Contains(c)
+                               select e.Id).FirstOrDefault()
+                });
 
             return result.ToList();
         }
